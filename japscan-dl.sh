@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 
-npm install &> /dev/null
+if [[ ! -d node_modules ]]; then
+  echo "Installing dependencies (this might be slow)..."
+  npm install
+fi
+
+echo "Retrieving Cloudflare token..."
 eval "$(node ./cloudflare-token.js)"
 
 host='japscan.co'
