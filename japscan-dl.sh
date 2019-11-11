@@ -35,7 +35,8 @@ fi
 pages=( $(grep -Po 'data-img="\K.*?(?=")' "$out") )
 rm "$out"
 
-path="$title"
+BASE_DIR=$(xdg-user-dir PICTURES)/Scans
+path="$BASE_DIR/$title"
 if [[ ! -z "$volume" ]]; then
   path="$path/Volume $volume"
 fi
@@ -77,4 +78,4 @@ for index in "${!pages[@]}"; do
   fi
 done
 echo
-echo "Chapter $chapter downloaded to './$path', enjoy!"
+echo "Chapter $chapter downloaded to '$path', enjoy!"

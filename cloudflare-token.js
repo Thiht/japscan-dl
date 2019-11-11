@@ -2,14 +2,18 @@ const puppeteer = require("puppeteer");
 
 (async () => {
   const browser = await puppeteer.launch({
-    headless: false
+    headless: false,
+    defaultViewport: null
   });
 
+  let ua = await browser.userAgent();
+  ua = ua.replace("Headless", "");
+
   const page = await browser.newPage();
+  await page.setUserAgent(ua);
   await page.goto("https://www.japscan.co/");
   await page.waitFor(6000);
 
-  const ua = await browser.userAgent();
   const cookies = await page.cookies();
   const cookieString = cookies
     .filter(cookie =>
