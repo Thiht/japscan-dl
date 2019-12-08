@@ -13,8 +13,32 @@ host='japscan.co'
 title="$1"
 dashed_title=$(echo "$title" | tr ' ' '-')
 lc_dashed_title=$(echo "$dashed_title" | tr '[:upper:]' '[:lower:]' )
-volume= # TODO: compute dynamically from the chapter
+
+if [[ $# -lt 2 ]]; then
+  echo "Retrieving list of chapters for $title..."
+  url="https://www.$host/manga/$lc_dashed_title/"
+  out=$(mktemp)
+  if ! curl "$url" \
+    --header "User-Agent: $ua" \
+    --header "Cookie: $cookie" \
+    --compressed \
+    --fail \
+    --silent \
+    --show-error \
+    --output "$out"; then
+    >&2 echo -e "\rFailed to download page $url"
+    >&2 echo -e "Maybe the cookie is expired"
+    >&2 echo -e "Maybe the user agent is not the same as the one used to generate the cookie"
+    exit 1
+  fi
+  chapters=( $(grep -Po "/lecture-en-ligne/$lc_dashed_title/\K(.*?)(?=/)" "$out" | sed '1!G;h;$!d') )
+  echo "List of available chapters for $title:"
+  printf -- '- %s\n' "${chapters[@]}"
+  exit 0
+fi
+
 chapter="$2"
+tc_chapter="${chapter^}"
 
 echo "Retrieving number of pages for chapter $chapter..."
 url="https://www.$host/lecture-en-ligne/$lc_dashed_title/$chapter/"
@@ -37,13 +61,15 @@ rm "$out"
 
 BASE_DIR=$(xdg-user-dir PICTURES)/Scans
 path="$BASE_DIR/$title"
-if [[ ! -z "$volume" ]]; then
+if [[ $chapter == volume-* ]]; then
+  volume=$(echo "$chapter" | cut -d- -f2)
   path="$path/Volume $volume"
+else
+  path="$path/Chapitre $chapter"
 fi
-path="$path/Chapitre $chapter"
 
 mkdir -p "$path"
-cd "$path" || exit
+cd "$path" || exit 1
 
 for index in "${!pages[@]}"; do
   page="${pages[index]}"
@@ -58,7 +84,7 @@ for index in "${!pages[@]}"; do
   # Random sleep between 1 and 3 seconds
   sleep $((RANDOM % 3 + 1))
 
-  url="https://c.$host/lel/$dashed_title/$chapter/$page"
+  url="https://c.$host/lel/$dashed_title/$tc_chapter/$page"
 
   if ! curl "$url" \
     --header "Host: c.$host" \
