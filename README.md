@@ -1,10 +1,5 @@
 # japscan-dl
 
-Download scans from [JapScan.co](https://www.japscan.co/).
+## Deprecation notice
 
-## Usage
-
-```sh
-# ./japscan-dl.sh <manga> <chapter>
-$ ./japscan-dl.sh 'One Punch Man' 1
-```
+As of April 2020, the method used in this project doesn't work anymore.
